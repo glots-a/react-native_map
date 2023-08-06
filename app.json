@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "map-app",
-    "slug": "map-app",
+    "slug": "react-native-map-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,10 +21,17 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.avoda.reactnativemapapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1a886ffe-8d01-4bf0-8711-75ac9879a72c"
+      }
+    },
+    "owner": "avoda"
   }
 }

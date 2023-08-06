@@ -1,18 +1,27 @@
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { ImageBackground, Text, StyleSheet, Dimensions } from 'react-native';
 
 export default function Star() {
   return (
-    <View style={styles.container}>
-      <Text style={{ color: 'black' }}>Star</Text>
-    </View>
+    <ImageBackground
+      source={require('../assets/img/kozak2.jpg')}
+      style={styles.container}
+    >
+      <Text style={styles.text}>Settings</Text>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  text: {
+    color: 'blue',
+    fontSize: 32,
   },
 });

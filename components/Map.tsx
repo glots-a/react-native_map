@@ -19,10 +19,11 @@ import RouteInfoMarker from './RouteInfoMarker';
 import CustomMarker from './CustomMarker';
 import * as Location from 'expo-location';
 import ClientMarker from './ClientMarker';
+import TripCheking from './TripCheking';
 
 const { width, height } = Dimensions.get('window');
 
-const LOCATION_DISTANCE_THRESSHOLD = 1;
+const LOCATION_DISTANCE_THRESSHOLD = 15;
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.02;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
@@ -39,11 +40,10 @@ interface Place {
   street: string;
 }
 
-export default function Main() {
+export default function Map() {
   const [initialPosition, setInitialPosition] = useState(INITIAL_POSITION);
   const [clientPosition, setClientPosition] = useState<LatLng | null>();
-  const [isClientReady, setIsClientReady] = useState(false);
-
+  const [curentAdress, setCurenAdress] = useState('');
   const [origin, setOrigin] = useState<LatLng | null>();
   const [destination, setDestination] = useState<LatLng | null>();
   const [showDirections, setShowDirections] = useState(false);
@@ -57,6 +57,8 @@ export default function Main() {
   const [alterDistance, setAlterDistance] = useState<number>(0);
   const [alterDuration, setAlterDuration] = useState<number>(0);
   const [showStartButton, setShowStartButton] = useState(true);
+  const [isClientReady, setIsClientReady] = useState(false);
+  const [renderMainRoute, setRenderMainRoute] = useState(false);
 
   const handleResetInputValuesAll = () => {
     setDistance(0);
@@ -257,12 +259,28 @@ export default function Main() {
           accuracy: Location.Accuracy.High,
           distanceInterval: LOCATION_DISTANCE_THRESSHOLD,
         },
-        (location) => {
+        async (location) => {
           const { coords } = location;
           const { latitude, longitude } = coords;
 
           setClientPosition({ latitude, longitude });
           setInitialPosition({ ...initialPosition, latitude, longitude });
+
+          try {
+            const address = await Location.reverseGeocodeAsync({
+              latitude,
+              longitude,
+            });
+
+            if (address && address.length > 0) {
+              const firstAddress = address[0];
+              const street = firstAddress.street || '';
+
+              setCurenAdress(street);
+            }
+          } catch (error) {
+            console.error('Error getting address:', error);
+          }
         },
       );
     })();
@@ -273,6 +291,14 @@ export default function Main() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (origin && destination && alternativeRoute) {
+      setTimeout(() => {
+        setRenderMainRoute(true);
+      }, 1000); // Add a 1-second delay
+    }
+  }, [origin, destination, alternativeRoute]);
 
   return (
     <View style={styles.container}>
@@ -299,7 +325,7 @@ export default function Main() {
             position={mainPolyMarker}
             routeDuration={duration}
             routeDistance={distance}
-            isActive={true}
+            isActive
           />
         )}
 
@@ -308,6 +334,7 @@ export default function Main() {
             position={alterPolyMarker}
             routeDuration={alterDistance}
             routeDistance={alterDuration}
+            isActive={false}
           />
         )}
 
@@ -337,15 +364,8 @@ export default function Main() {
               waypoints={decodePolyline(alternativeRoute, 10)}
               onReady={(args) => traceRouteOnReady(args, 'alter', 1.5)}
             />
-            <MapViewDirections
-              origin={origin}
-              destination={destination}
-              apikey={GOOGLE_API_KEY}
-              strokeColor="#665cd1"
-              strokeWidth={4}
-              onReady={(args) => traceRouteOnReady(args, 'main', 4)}
-              // optimizeWaypoints={true} !!!! to avoid google biling I put this option to default value (false)
-            />
+
+            {/* Client route */}
             {isClientReady && origin && destination && (
               <MapViewDirections
                 origin={clientPosition || INITIAL_POSITION}
@@ -354,6 +374,19 @@ export default function Main() {
                 strokeColor="#B1ABF2"
                 strokeWidth={4}
                 // optimizeWaypoints={true} !!!! to avoid google billing I put this option to the default value (false)
+              />
+            )}
+
+            {/* Main route */}
+            {renderMainRoute && origin && destination && (
+              <MapViewDirections
+                origin={origin}
+                destination={destination}
+                apikey={GOOGLE_API_KEY}
+                strokeColor="#665cd1"
+                strokeWidth={4}
+                onReady={(args) => traceRouteOnReady(args, 'main', 4)}
+                // optimizeWaypoints={true} !!!! to avoid google billing I put this option to default value (false)
               />
             )}
           </>
@@ -371,6 +404,7 @@ export default function Main() {
             }}
             onReset={() => handleInputReset('origin')}
           />
+
           <InputAutocomplete
             label="Кінцева точка"
             isInputValue={!!destination}
@@ -379,6 +413,7 @@ export default function Main() {
             }}
             onReset={() => handleInputReset('destination')}
           />
+
           {destination && origin && (
             <TouchableOpacity style={styles.button} onPress={traceRoute}>
               <Text style={styles.buttonText}>Побудувати маршрут</Text>
@@ -386,6 +421,7 @@ export default function Main() {
           )}
         </View>
       )}
+
       <>
         {distance && duration ? (
           <RouteInformation
@@ -393,6 +429,14 @@ export default function Main() {
             destinationPlace={destinationPlace}
             distance={distance}
             duration={duration}
+            onResetInputValues={handleResetInputValuesAll}
+          />
+        ) : null}
+
+        {isClientReady ? (
+          <TripCheking
+            originPlace={originPlace}
+            curentAdress={curentAdress}
             onResetInputValues={handleResetInputValuesAll}
           />
         ) : null}

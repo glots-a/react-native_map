@@ -1,15 +1,8 @@
 import React from 'react';
-import { ImageBackground, Text, StyleSheet, Dimensions } from 'react-native';
+import { Text, StyleSheet, Dimensions } from 'react-native';
 
 export default function Settings() {
-  return (
-    <ImageBackground
-      source={require('../assets/img/kozak2.jpg')}
-      style={styles.container}
-    >
-      <Text style={styles.text}>Слава Україні</Text>
-    </ImageBackground>
-  );
+  return <Text style={styles.text}>Settings</Text>;
 }
 
 const styles = StyleSheet.create({
@@ -21,7 +14,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    color: 'yellow',
+    color: 'black',
     fontSize: 32,
   },
 });

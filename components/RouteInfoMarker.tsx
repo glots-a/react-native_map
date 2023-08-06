@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   active: {
     borderWidth: 3,
-    borderColor: '#202052',
+    borderColor: '#4f4fc4',
     borderStyle: 'solid',
   },
   durationText: {

@@ -5,6 +5,7 @@ import {
   Dimensions,
   Text,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 import { GOOGLE_API_KEY } from '../environments';
@@ -13,15 +14,18 @@ import { useEffect, useRef, useState } from 'react';
 import MapViewDirections from 'react-native-maps-directions';
 import InputAutocomplete from './InputAutocomplete';
 import RouteInformation from './RouteInformation';
-import RouteInfoMarker from './InputAutocomplete';
+import RouteInfoMarker from './RouteInfoMarker';
+import CustomMarker from './CustomMarker';
+import * as Location from 'expo-location';
 
 const { width, height } = Dimensions.get('window');
 
+const LOCATION_DISTANCE_THRESSHOLD = 1;
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.02;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const INITIAL_POSITION = {
-  latitude: 49.34991,
+  latitude: 46.34991,
   longitude: 23.50561,
   latitudeDelta: LATITUDE_DELTA,
   longitudeDelta: LONGITUDE_DELTA,
@@ -34,6 +38,9 @@ interface Place {
 }
 
 export default function Main() {
+  const [initialPosition, setInitialPosition] = useState(INITIAL_POSITION);
+  const [clientPosition, setClientPosition] = useState<LatLng | null>();
+
   const [origin, setOrigin] = useState<LatLng | null>();
   const [destination, setDestination] = useState<LatLng | null>();
   const [showDirections, setShowDirections] = useState(false);
@@ -46,7 +53,8 @@ export default function Main() {
   const [alterPolyMarker, setAlterPolyLineMarker] = useState<LatLng | null>();
   const [alterDistance, setAlterDistance] = useState<number>(0);
   const [alterDuration, setAlterDuration] = useState<number>(0);
-  console.log('distsnce', distance, alterDistance);
+
+  console.log('initial', clientPosition);
 
   const handleResetInputValuesAll = () => {
     setDistance(0);
@@ -225,17 +233,57 @@ export default function Main() {
       fetchAlternativeRoute();
     }
   }, [origin, destination]);
+  // /////////////////////////////
+  useEffect(() => {
+    let subscription: Location.LocationSubscription | null = null;
 
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          distanceInterval: LOCATION_DISTANCE_THRESSHOLD,
+        },
+        (location) => {
+          const { coords } = location;
+          const { latitude, longitude } = coords;
+
+          setClientPosition({ latitude, longitude });
+          setInitialPosition({ ...initialPosition, latitude, longitude });
+        },
+      );
+    })();
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, []);
+  // ////////////////////////
   return (
     <View style={styles.container}>
       <MapView
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
-        initialRegion={INITIAL_POSITION}
+        initialRegion={initialPosition}
       >
-        {origin && <Marker coordinate={origin} />}
-        {destination && <Marker coordinate={destination} />}
+        {origin && (
+          <Marker coordinate={origin}>
+            <CustomMarker />
+          </Marker>
+        )}
+        {destination && (
+          <Marker coordinate={destination}>
+            <CustomMarker />
+          </Marker>
+        )}
         {mainPolyMarker && (
           <RouteInfoMarker
             position={mainPolyMarker}
@@ -295,9 +343,11 @@ export default function Main() {
             }}
             onReset={() => handleInputReset('destination')}
           />
-          <TouchableOpacity style={styles.button} onPress={traceRoute}>
-            <Text style={styles.buttonText}>Побудувати маршрут</Text>
-          </TouchableOpacity>
+          {destination && origin && (
+            <TouchableOpacity style={styles.button} onPress={traceRoute}>
+              <Text style={styles.buttonText}>Побудувати маршрут</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
       {distance && duration ? (
@@ -309,8 +359,8 @@ export default function Main() {
             duration={duration}
             onResetInputValues={handleResetInputValuesAll}
           />
-          <TouchableOpacity>
-            <Text>Обрати Маршрут</Text>
+          <TouchableOpacity style={styles.startButton}>
+            <Text style={styles.startButtonText}>Обрати маршрут</Text>
           </TouchableOpacity>
         </>
       ) : null}
@@ -347,5 +397,24 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: 'center',
     color: 'white',
+  },
+  startButton: {
+    position: 'absolute',
+    bottom: 116,
+    alignSelf: 'center',
+    width: 167,
+    height: 36,
+    backgroundColor: '#0F0F0F',
+    paddingBottom: 3,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  startButtonText: {
+    color: '#665CD1',
+    fontSize: 16,
+    fontWeight: 'bold',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

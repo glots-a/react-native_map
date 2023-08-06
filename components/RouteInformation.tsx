@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { TouchableOpacity } from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
+import { LatLng } from 'react-native-maps';
+
 import styled from 'styled-components/native';
 import Constants from 'expo-constants';
 
@@ -13,6 +17,7 @@ type Props = {
   duration: number;
   originPlace: Place | null;
   destinationPlace: Place | null;
+  onResetInputValues: () => void;
 };
 
 export default function RouteInformation({
@@ -20,6 +25,7 @@ export default function RouteInformation({
   duration,
   originPlace,
   destinationPlace,
+  onResetInputValues,
 }: Props) {
   const [date, setDate] = useState<Date>();
   const [destination, setDestination] = useState<Date>();
@@ -95,6 +101,12 @@ export default function RouteInformation({
           </AdressDetails>
         </RouteInfo>
       </ContentContainer>
+      <TouchableOpacity
+        onPress={onResetInputValues}
+        style={{ position: 'absolute', top: 25, left: 10 }}
+      >
+        <AntDesign name="back" size={22} color="white" />
+      </TouchableOpacity>
     </Container>
   );
 }

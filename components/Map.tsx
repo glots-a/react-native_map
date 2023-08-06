@@ -1,3 +1,4 @@
+import React from 'react';
 import MapView, { LatLng, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import {
   StyleSheet,
@@ -17,6 +18,7 @@ import RouteInformation from './RouteInformation';
 import RouteInfoMarker from './RouteInfoMarker';
 import CustomMarker from './CustomMarker';
 import * as Location from 'expo-location';
+import ClientMarker from './ClientMarker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,7 +27,7 @@ const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.02;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const INITIAL_POSITION = {
-  latitude: 46.34991,
+  latitude: 49.34991,
   longitude: 23.50561,
   latitudeDelta: LATITUDE_DELTA,
   longitudeDelta: LONGITUDE_DELTA,
@@ -40,6 +42,7 @@ interface Place {
 export default function Main() {
   const [initialPosition, setInitialPosition] = useState(INITIAL_POSITION);
   const [clientPosition, setClientPosition] = useState<LatLng | null>();
+  const [isClientReady, setIsClientReady] = useState(false);
 
   const [origin, setOrigin] = useState<LatLng | null>();
   const [destination, setDestination] = useState<LatLng | null>();
@@ -53,8 +56,7 @@ export default function Main() {
   const [alterPolyMarker, setAlterPolyLineMarker] = useState<LatLng | null>();
   const [alterDistance, setAlterDistance] = useState<number>(0);
   const [alterDuration, setAlterDuration] = useState<number>(0);
-
-  console.log('initial', clientPosition);
+  const [showStartButton, setShowStartButton] = useState(true);
 
   const handleResetInputValuesAll = () => {
     setDistance(0);
@@ -70,6 +72,8 @@ export default function Main() {
     setAlterPolyLineMarker(null);
     setAlterDistance(0);
     setAlterDuration(0);
+    setIsClientReady(false);
+    setShowStartButton(true);
   };
 
   const fetchAlternativeRoute = async () => {
@@ -137,7 +141,6 @@ export default function Main() {
       handleDuration(args.duration);
 
       const index = Math.floor(args.coordinates.length / triger);
-      console.log(index);
       handlePolyMarker(args.coordinates[index]);
     }
   };
@@ -228,12 +231,17 @@ export default function Main() {
     return normalizePoly;
   };
 
+  const handleStartNavigate = () => {
+    setIsClientReady(true);
+    setShowStartButton(false);
+  };
+
   useEffect(() => {
     if (origin && destination) {
       fetchAlternativeRoute();
     }
   }, [origin, destination]);
-  // /////////////////////////////
+
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null;
 
@@ -265,7 +273,7 @@ export default function Main() {
       }
     };
   }, []);
-  // ////////////////////////
+
   return (
     <View style={styles.container}>
       <MapView
@@ -279,11 +287,13 @@ export default function Main() {
             <CustomMarker />
           </Marker>
         )}
+
         {destination && (
           <Marker coordinate={destination}>
             <CustomMarker />
           </Marker>
         )}
+
         {mainPolyMarker && (
           <RouteInfoMarker
             position={mainPolyMarker}
@@ -292,6 +302,7 @@ export default function Main() {
             isActive={true}
           />
         )}
+
         {alterPolyMarker && (
           <RouteInfoMarker
             position={alterPolyMarker}
@@ -299,6 +310,21 @@ export default function Main() {
             routeDistance={alterDuration}
           />
         )}
+
+        {alterPolyMarker && (
+          <RouteInfoMarker
+            position={alterPolyMarker}
+            routeDuration={alterDistance}
+            routeDistance={alterDuration}
+          />
+        )}
+
+        {clientPosition && isClientReady && (
+          <Marker coordinate={clientPosition}>
+            <ClientMarker />
+          </Marker>
+        )}
+
         {showDirections && origin && destination && (
           <>
             {/* Alternative route */}
@@ -320,6 +346,16 @@ export default function Main() {
               onReady={(args) => traceRouteOnReady(args, 'main', 4)}
               // optimizeWaypoints={true} !!!! to avoid google biling I put this option to default value (false)
             />
+            {isClientReady && origin && destination && (
+              <MapViewDirections
+                origin={clientPosition || INITIAL_POSITION}
+                destination={origin}
+                apikey={GOOGLE_API_KEY}
+                strokeColor="#B1ABF2"
+                strokeWidth={4}
+                // optimizeWaypoints={true} !!!! to avoid google billing I put this option to the default value (false)
+              />
+            )}
           </>
         )}
       </MapView>
@@ -350,8 +386,8 @@ export default function Main() {
           )}
         </View>
       )}
-      {distance && duration ? (
-        <>
+      <>
+        {distance && duration ? (
           <RouteInformation
             originPlace={originPlace}
             destinationPlace={destinationPlace}
@@ -359,11 +395,17 @@ export default function Main() {
             duration={duration}
             onResetInputValues={handleResetInputValuesAll}
           />
-          <TouchableOpacity style={styles.startButton}>
+        ) : null}
+
+        {showStartButton && distance && duration ? (
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={handleStartNavigate}
+          >
             <Text style={styles.startButtonText}>Обрати маршрут</Text>
           </TouchableOpacity>
-        </>
-      ) : null}
+        ) : null}
+      </>
     </View>
   );
 }

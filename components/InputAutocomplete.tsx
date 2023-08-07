@@ -3,8 +3,9 @@ import {
   GooglePlaceDetail,
   GooglePlacesAutocomplete,
 } from 'react-native-google-places-autocomplete';
-import { GOOGLE_API_KEY } from '../environments';
 import { AntDesign } from '@expo/vector-icons';
+
+const GOOGLE_API_KEY = 'AIzaSyCMrMUK13u0JzReaVOmnLXLhrpv9FWxp8o';
 
 type Props = {
   label: string;

@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 import { GooglePlaceDetail } from 'react-native-google-places-autocomplete';
-import { GOOGLE_API_KEY } from '../environments';
 import Constants from 'expo-constants';
 import { useEffect, useRef, useState } from 'react';
 import MapViewDirections from 'react-native-maps-directions';
@@ -21,6 +20,7 @@ import * as Location from 'expo-location';
 import ClientMarker from './ClientMarker';
 import TripCheking from './TripCheking';
 
+const GOOGLE_API_KEY = 'AIzaSyCMrMUK13u0JzReaVOmnLXLhrpv9FWxp8o';
 const { width, height } = Dimensions.get('window');
 
 const LOCATION_DISTANCE_THRESSHOLD = 25;

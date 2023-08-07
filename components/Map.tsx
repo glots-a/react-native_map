@@ -21,6 +21,7 @@ import ClientMarker from './ClientMarker';
 import TripCheking from './TripCheking';
 
 const GOOGLE_API_KEY = 'AIzaSyCMrMUK13u0JzReaVOmnLXLhrpv9FWxp8o';
+
 const { width, height } = Dimensions.get('window');
 
 const LOCATION_DISTANCE_THRESSHOLD = 25;
@@ -261,7 +262,6 @@ export default function Map() {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission to access location was denied');
         return;
       }
 

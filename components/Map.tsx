@@ -23,7 +23,7 @@ import TripCheking from './TripCheking';
 
 const { width, height } = Dimensions.get('window');
 
-const LOCATION_DISTANCE_THRESSHOLD = 15;
+const LOCATION_DISTANCE_THRESSHOLD = 25;
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.02;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
@@ -119,7 +119,7 @@ export default function Map() {
     }
   };
 
-  const edgePaddingValue = 70;
+  const edgePaddingValue = 50;
 
   const edgePadding = {
     top: edgePaddingValue,
@@ -236,6 +236,10 @@ export default function Map() {
   const handleStartNavigate = () => {
     setIsClientReady(true);
     setShowStartButton(false);
+
+    if (clientPosition) {
+      moveTo(clientPosition);
+    }
   };
 
   useEffect(() => {
@@ -296,7 +300,7 @@ export default function Map() {
     if (origin && destination && alternativeRoute) {
       setTimeout(() => {
         setRenderMainRoute(true);
-      }, 1000); // Add a 1-second delay
+      }, 1000);
     }
   }, [origin, destination, alternativeRoute]);
 

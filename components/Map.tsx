@@ -59,6 +59,7 @@ export default function Map() {
   const [showStartButton, setShowStartButton] = useState(true);
   const [isClientReady, setIsClientReady] = useState(false);
   const [renderMainRoute, setRenderMainRoute] = useState(false);
+  const [shouldFollowClient, setShouldFollowClient] = useState(false);
 
   const handleResetInputValuesAll = () => {
     setDistance(0);
@@ -76,6 +77,7 @@ export default function Map() {
     setAlterDuration(0);
     setIsClientReady(false);
     setShowStartButton(true);
+    setShouldFollowClient(false);
   };
 
   const fetchAlternativeRoute = async () => {
@@ -114,7 +116,11 @@ export default function Map() {
   const moveTo = async (position: LatLng) => {
     const camera = await mapRef.current?.getCamera();
     if (camera) {
-      camera.center = position;
+      if (shouldFollowClient) {
+        camera.center = clientPosition || position;
+      } else {
+        camera.center = position;
+      }
       mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
   };
@@ -236,6 +242,7 @@ export default function Map() {
   const handleStartNavigate = () => {
     setIsClientReady(true);
     setShowStartButton(false);
+    setShouldFollowClient(true);
 
     if (clientPosition) {
       moveTo(clientPosition);
@@ -303,6 +310,12 @@ export default function Map() {
       }, 1000);
     }
   }, [origin, destination, alternativeRoute]);
+
+  useEffect(() => {
+    if (clientPosition && shouldFollowClient) {
+      moveTo(clientPosition);
+    }
+  }, [clientPosition, shouldFollowClient]);
 
   return (
     <View style={styles.container}>

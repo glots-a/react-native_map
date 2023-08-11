@@ -13,7 +13,7 @@ interface Place {
 }
 
 type Props = {
-  distance: number;
+  top: number;
   duration: number;
   originPlace: Place | null;
   destinationPlace: Place | null;
@@ -21,8 +21,8 @@ type Props = {
 };
 
 export default function RouteInformation({
-  distance,
   duration,
+  top,
   originPlace,
   destinationPlace,
   onResetInputValues,
@@ -62,7 +62,7 @@ export default function RouteInformation({
   }, [duration]);
 
   return (
-    <Container>
+    <Container style={{ position: 'absolute', top: top }}>
       <ContentContainer>
         <Title>Ваш маршрут прокладено</Title>
         <RouteInfo>
@@ -116,7 +116,7 @@ const Container = styled.View`
   width: 100%;
   background-color: #0f0f0f;
   height: 165px;
-  top: ${Constants.statusBarHeight}px;
+  top: 0px;
   padding: 8px;
   border-radius: 8px;
   elevation: 4;

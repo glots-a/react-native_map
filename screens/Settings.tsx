@@ -1,8 +1,12 @@
 import React from 'react';
-import { Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 
 export default function Settings() {
-  return <Text style={styles.text}>Settings</Text>;
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Settings</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

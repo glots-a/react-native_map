@@ -6,8 +6,9 @@ import {
   Dimensions,
   Text,
   TouchableOpacity,
-  Alert,
+  Platform,
 } from 'react-native';
+import { GOOGLE_API_KEY } from '../environments';
 import { GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 import Constants from 'expo-constants';
 import { useEffect, useRef, useState } from 'react';
@@ -20,7 +21,8 @@ import * as Location from 'expo-location';
 import ClientMarker from './ClientMarker';
 import TripCheking from './TripCheking';
 
-const GOOGLE_API_KEY = 'AIzaSyCMrMUK13u0JzReaVOmnLXLhrpv9FWxp8o';
+const statusBarHeight =
+  Platform.OS === 'android' ? Constants.statusBarHeight : 0;
 
 const { width, height } = Dimensions.get('window');
 
@@ -119,6 +121,7 @@ export default function Map() {
     if (camera) {
       if (shouldFollowClient) {
         camera.center = clientPosition || position;
+        camera.zoom = 14;
       } else {
         camera.center = position;
       }
@@ -440,13 +443,13 @@ export default function Map() {
       )}
 
       <>
-        {distance && duration ? (
+        {distance && duration && !isClientReady ? (
           <RouteInformation
             originPlace={originPlace}
             destinationPlace={destinationPlace}
-            distance={distance}
             duration={duration}
             onResetInputValues={handleResetInputValuesAll}
+            top={statusBarHeight}
           />
         ) : null}
 
@@ -455,6 +458,7 @@ export default function Map() {
             originPlace={originPlace}
             curentAdress={curentAdress}
             onResetInputValues={handleResetInputValuesAll}
+            top={statusBarHeight}
           />
         ) : null}
 
@@ -489,7 +493,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     padding: 8,
     borderRadius: 8,
-    top: Constants.statusBarHeight,
+    top: statusBarHeight,
   },
   button: {
     backgroundColor: '#7E57C2',

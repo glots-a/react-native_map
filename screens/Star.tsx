@@ -7,7 +7,7 @@ export default function Star() {
       source={require('../assets/img/kozak2.jpg')}
       style={styles.container}
     >
-      <Text style={styles.text}>Settings</Text>
+      <Text style={styles.text}>Слава Україні!</Text>
     </ImageBackground>
   );
 }

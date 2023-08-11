@@ -2,7 +2,6 @@ import { TouchableOpacity, Image } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 
 import styled from 'styled-components/native';
-import Constants from 'expo-constants';
 
 interface Place {
   country: string;
@@ -14,15 +13,17 @@ type Props = {
   originPlace: Place | null;
   onResetInputValues: () => void;
   curentAdress: string;
+  top: number;
 };
 
 export default function TripCheking({
   originPlace,
   onResetInputValues,
   curentAdress,
+  top,
 }: Props) {
   return (
-    <Container>
+    <Container style={{ position: 'absolute', top: top }}>
       <ContentContainer>
         <Title>Маршрут до точки загрузки</Title>
         <RouteInfo>
@@ -65,11 +66,9 @@ export default function TripCheking({
 }
 
 const Container = styled.View`
-  position: absolute;
   width: 100%;
   background-color: #0f0f0f;
   height: 165px;
-  top: ${Constants.statusBarHeight}px;
   padding: 8px;
   border-radius: 8px;
   elevation: 4;
